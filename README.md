@@ -1,3 +1,28 @@
+
+### ✅ Hypothesis-1 Outcome
+
+> **Hypothesis 1:**  
+> *Tampered artifacts will show ≥ 25 % deviation in statistical patterns across provenance fields compared to untampered ones.*
+
+**Result:** *Partially Supported*  
+- Quantitatively supported by the model-derived `tampering_score` metric (≈ 193 % deviation, p < 0.001).  
+- Not supported by low-variance provenance fields (`materials_count`, `entropy_b64`, `time_delta_sec`).
+
+This indicates that the **fine-tuned LLM detects semantic tampering behavior**, whereas **raw provenance metadata fields alone** remain statistically stable.
+
+---
+
+### 📈 Visualization
+
+The deviation chart below summarizes these findings:
+
+![Hypothesis-1 Deviation Plot](hypothesis1_deviation_plot.png)
+
+- The dashed red line marks the 25 % deviation threshold.  
+- Only the `tampering_score` exceeds the threshold, confirming its discriminative effectiveness.
+
+---
+
 ## 🌿 Workflow Overview
 
 | **Phase** | **Script** | **Description** |
@@ -46,30 +71,6 @@ The model inference and deviation analysis produced the following metrics:
 
 - **Time Delta**  
   Missing or inconsistent timestamp values prevented calculation; these fields can be refined in future dataset iterations.
-
----
-
-### ✅ Hypothesis-1 Outcome
-
-> **Hypothesis 1:**  
-> *Tampered artifacts will show ≥ 25 % deviation in statistical patterns across provenance fields compared to untampered ones.*
-
-**Result:** *Partially Supported*  
-- Quantitatively supported by the model-derived `tampering_score` metric (≈ 193 % deviation, p < 0.001).  
-- Not supported by low-variance provenance fields (`materials_count`, `entropy_b64`, `time_delta_sec`).
-
-This indicates that the **fine-tuned LLM detects semantic tampering behavior**, whereas **raw provenance metadata fields alone** remain statistically stable.
-
----
-
-### 📈 Visualization
-
-The deviation chart below summarizes these findings:
-
-![Hypothesis-1 Deviation Plot](hypothesis1_deviation_plot.png)
-
-- The dashed red line marks the 25 % deviation threshold.  
-- Only the `tampering_score` exceeds the threshold, confirming its discriminative effectiveness.
 
 ---
 

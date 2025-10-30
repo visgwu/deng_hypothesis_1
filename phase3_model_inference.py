@@ -13,7 +13,7 @@ from tqdm import tqdm
 
 # === Configuration ===
 MODEL = "ft:gpt-4o-mini-2024-07-18:vchirrav::CQm2xpT1"
-openai.api_key = "XXXXXXXX"
+openai.api_key = "xxxxxx"
 DATASET_PATH = "hypothesis1_features.csv"
 BASE_DIR = "final_datasets_extracted"
 

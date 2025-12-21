@@ -1,5 +1,0 @@
-metric,untampered_mean,tampered_mean,deviation_%,t_statistic,p_value,significant_(p<=0.05)
-tampering_score,0.3265,0.9565,192.93,7.8311,0.0,True
-materials_count,0.9592,0.913,4.81,-0.6937,0.49285,False
-time_delta_sec,,,,,,False
-entropy_b64,5.7188,5.7193,0.01,0.4535,0.65165,False

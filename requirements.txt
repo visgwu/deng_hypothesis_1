@@ -1,4 +1,6 @@
-openai
 pandas
-matplotlib
+numpy
 scipy
+matplotlib
+python-Levenshtein
+scikit-learn

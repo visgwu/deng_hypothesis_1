@@ -1,0 +1,20 @@
+vchir@vasupc MINGW64 /c/vasu/D.Eng/Praxis/Git/deng_hypothesis_1 (main)
+$ python3 src/phase1_hypothesis1_analysis.py
+Loading data...
+Baseline Builder ID: https://github.com/actions/runner/github-hosted-runner
+
+--- RESULTS SUMMARY (Mean % Deviation) ---
+            builder_id_deviation  env_var_deviation
+label
+tampered               61.111111              29.25
+untampered              0.000000               0.00
+
+--- HYPOTHESIS CHECK (Target: >= 25% Delta) ---
+builder_id_deviation    61.111111
+env_var_deviation       29.250000
+dtype: float64
+
+Detailed CSV saved to: results\hypothesis1_results.csv
+Chart saved to: results\hypothesis1_chart.png
+
+vchir@vasupc MINGW64 /c/vasu/D.Eng/Praxis/Git/deng_hypothesis_1 (main)

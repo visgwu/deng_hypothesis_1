@@ -12,8 +12,9 @@ This research component of the Doctor of Engineering praxis investigates the sta
 The dataset was constructed through controlled empirical execution of CI/CD pipelines using **GitHub Actions**:
 * **Untampered Baseline ($N=50$):** Fifty independent build runs were executed using a secured, SLSA-compliant workflow. These builds utilized the standard `github-hosted-runner` and verified build entry points.
 * **Tampered Dataset ($N=50$):** Fifty additional build runs were executed after introducing malware-based components into the pipeline. These runs simulated common supply chain attack vectors, including:
-    * **Builder Compromise:** Redirecting execution to an untrusted private runner.
-    * **Environment Injection:** Injecting malicious environment variables (e.g., `LD_PRELOAD`, debug flags) and removing security controls (`SECURE_BOOT`).
+    * **Malware Injection:** Installing malicious npm packages drawn from the OpenSSF Malicious Packages Database into the build.
+    * **Builder Compromise:** Redirecting execution to an untrusted private runner (deterministic substitution across all tampered runs).
+    * **Environment Injection:** Injecting malicious environment variables (e.g., `LD_PRELOAD`, debug flags) and removing security controls (`SECURE_BOOT`). This axis is bimodal by design: 39 of the 50 tampered builds received the injected variables (37.5% deviation) while 11 left the environment unchanged (0% deviation).
 
 ### 3.2 Metric Selection
 To quantify the deviation, two specific semantic metrics were calculated for each artifact:
@@ -27,10 +28,12 @@ The analysis compared the semantic metrics of the 50 tampered artifacts against 
 ### 4.1 Quantitative Findings
 The study successfully identified that tampering introduces deviation significantly exceeding the 25% threshold defined in the hypothesis.
 
-| Metric | Untampered Mean Deviation | Tampered Mean Deviation | Hypothesis Threshold | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **Builder ID Deviation** | 0.00% | **61.11%** | > 25% | **PASS** |
-| **Environment Deviation** | 0.00% | **29.25%** | > 25% | **PASS** |
+| Metric | Untampered Mean Deviation | Tampered Mean Deviation | Hypothesis Threshold | Significance | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Builder ID Deviation** | 0.00% | **61.11%** | > 25% | Categorical separation (t-test N/A; zero within-group variance) | **PASS** |
+| **Environment Deviation** | 0.00% | **29.25%** (bimodal 0% / 37.5%) | > 25% | Two-sample t-test, p = 1.98e-23 | **PASS** |
+
+*Note: A parametric t-test is not reported for the Builder ID metric because both groups exhibit zero within-group variance under the deterministic tampering harness, rendering the test statistic mathematically undefined. The observed separation is complete and deterministic and is reported as a categorical difference.*
 
 ### 4.2 Visual Evidence
 The chart below illustrates the stark contrast between the baseline (Green) and the tampered (Red) samples. The dashed line represents the 25% validation threshold.

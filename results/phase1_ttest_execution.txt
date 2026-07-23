@@ -1,0 +1,19 @@
+Loading data...
+Baseline Builder ID: https://github.com/actions/runner/github-hosted-runner
+
+--- RESULTS SUMMARY (Mean % Deviation) ---
+            builder_id_deviation  env_var_deviation
+label                                              
+tampered               61.111111              29.25
+untampered              0.000000               0.00
+
+--- HYPOTHESIS CHECK (Target: >= 25% Delta) ---
+builder_id_deviation    61.111111
+env_var_deviation       29.250000
+dtype: float64
+
+--- STATISTICAL SIGNIFICANCE (Jaccard Env-Var Deviation) ---
+Two-sample t-test: t = 13.1806, p = 1.9837e-23
+
+Detailed CSV saved to: results/hypothesis1_results.csv
+Chart saved to: results/hypothesis1_chart.png

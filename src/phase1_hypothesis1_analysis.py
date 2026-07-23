@@ -23,9 +23,11 @@ def get_builder_id(data):
         return ""
 
 def get_env_keys(data):
-    """Extracts environment variable keys as a set."""
+    """Extracts environment variables as a set of key=value pairs
+    (praxis Section 3.5.2)."""
     try:
-        return set(data['predicate']['invocation']['environment'].keys())
+        env = data['predicate']['invocation']['environment']
+        return {f"{k}={v}" for k, v in env.items()}
     except KeyError:
         return set()
 
@@ -110,7 +112,16 @@ def analyze():
     print(summary)
     print("\n--- HYPOTHESIS CHECK (Target: >= 25% Delta) ---")
     print(delta)
-    
+
+    # 4b. Statistical Significance (two-sample t-test, Jaccard env-var metric)
+    # Note: not applied to builder_id_deviation — zero within-group variance
+    # renders the t-statistic undefined (reported as categorical separation).
+    untampered_env = df[df["label"] == "untampered"]["env_var_deviation"]
+    tampered_env = df[df["label"] == "tampered"]["env_var_deviation"]
+    t_stat, p_val = stats.ttest_ind(tampered_env, untampered_env)
+    print("\n--- STATISTICAL SIGNIFICANCE (Jaccard Env-Var Deviation) ---")
+    print(f"Two-sample t-test: t = {t_stat:.4f}, p = {p_val:.4e}")
+
     # Save Results
     csv_path = os.path.join(OUTPUT_DIR, "hypothesis1_results.csv")
     df.to_csv(csv_path, index=False)

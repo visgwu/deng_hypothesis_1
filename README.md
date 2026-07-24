@@ -21,6 +21,25 @@ To quantify the deviation, two specific semantic metrics were calculated for eac
 1.  **Builder Identity Deviation:** Measured using **Normalized Levenshtein Distance**. This captures the textual difference between the expected builder URI and the actual builder URI found in the provenance.
 2.  **Environment Deviation:** Measured using the **Jaccard Distance** ($1 - Jaccard Index$). This captures the divergence in the set of environment variables present during the build.
 
+### 3.3 Statistical Significance and Assumption Verification
+A two-sample test is used to confirm that the environment-variable deviation reflects a genuine effect rather than random chance. The parametric Student's t-test relies on three assumptions — (1) independence of observations, (2) within-group normality, and (3) homogeneity of variance — each of which is **verified explicitly** rather than assumed (`src/verify_assumptions.py`):
+
+| Assumption | Test | Result | Met? |
+| :--- | :--- | :--- | :--- |
+| Independence | By design (separate ephemeral CI/CD runs) | — | Yes |
+| Normality | Shapiro–Wilk | tampered W=0.51, p=1.15e-11; untampered constant (degenerate) | **No** |
+| Homogeneity of variance | Levene | W=13.82, p=3.35e-04 | **No** |
+
+Because normality and equal variance are violated, the non-parametric **Mann–Whitney U test** (which requires neither) is used as the **primary** test of significance. Welch's and Student's t-tests are reported only for reference.
+
+| Test | Statistic | p-value | Role |
+| :--- | :--- | :--- | :--- |
+| **Mann–Whitney U** | U=275.0 (rank-biserial=0.78) | **1.84e-15** | **Primary** |
+| Welch's t-test | t=13.18 | 9.90e-18 | Secondary (unequal variance) |
+| Student's t-test | t=13.18 | 1.98e-23 | Reference (assumptions unmet) |
+
+The builder-identity (NLD) metric is intentionally **not** significance-tested: both groups have zero within-group variance, so any t-statistic is undefined and the result is reported as a categorical separation of constants.
+
 ## 4. Results
 
 The analysis compared the semantic metrics of the 50 tampered artifacts against the Golden Reference baseline. The results demonstrate a massive statistical separation between the two groups.
@@ -31,9 +50,9 @@ The study successfully identified that tampering introduces deviation significan
 | Metric | Untampered Mean Deviation | Tampered Mean Deviation | Hypothesis Threshold | Significance | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Builder ID Deviation** | 0.00% | **61.11%** | > 25% | Categorical separation (t-test N/A; zero within-group variance) | **PASS** |
-| **Environment Deviation** | 0.00% | **29.25%** (bimodal 0% / 37.5%) | > 25% | Two-sample t-test, p = 1.98e-23 | **PASS** |
+| **Environment Deviation** | 0.00% | **29.25%** (bimodal 0% / 37.5%) | > 25% | Mann–Whitney U, p = 1.84e-15 (assumptions verified; see §3.3) | **PASS** |
 
-*Note: A parametric t-test is not reported for the Builder ID metric because both groups exhibit zero within-group variance under the deterministic tampering harness, rendering the test statistic mathematically undefined. The observed separation is complete and deterministic and is reported as a categorical difference.*
+*Note: A parametric t-test is not reported for the Builder ID metric because both groups exhibit zero within-group variance under the deterministic tampering harness, rendering the test statistic mathematically undefined. The observed separation is complete and deterministic and is reported as a categorical difference. For the Environment metric, the parametric t-test's normality and equal-variance assumptions are violated (§3.3), so the non-parametric Mann–Whitney U test is reported as the primary significance result.*
 
 ### 4.2 Visual Evidence
 The chart below illustrates the stark contrast between the baseline (Green) and the tampered (Red) samples. The dashed line represents the 25% validation threshold.

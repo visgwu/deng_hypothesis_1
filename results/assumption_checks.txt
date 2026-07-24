@@ -1,0 +1,11 @@
+
+--- ASSUMPTION VERIFICATION + SIGNIFICANCE (Jaccard Env-Var) ---
+Assumption 1 (Independence): satisfied by design — each provenance file is from a separate, ephemeral CI/CD run.
+Assumption 2 (Normality) — Shapiro-Wilk:
+  untampered: constant group (all values equal) — normality test degenerate; not normally distributed.
+  tampered  : W=0.5113, p=1.153e-11 -> NOT normal (reject)
+Assumption 3 (Homogeneity of variance) — Levene: W=13.8205, p=3.350e-04 -> variances UNEQUAL (reject)
+Decision: normality and equal-variance assumptions violated; Mann-Whitney U used as the PRIMARY test.
+  [PRIMARY] Mann-Whitney U: U=275.0, p=1.839e-15, rank-biserial=0.78
+  [secondary] Welch's t-test: t=13.1806, p=9.898e-18
+  [reference] Student's t-test (assumptions unmet): t=13.1806, p=1.984e-23

@@ -47,6 +47,59 @@ def jaccard_similarity(set1, set2):
     union = len(set1.union(set2))
     return intersection / union if union > 0 else 0.0
 
+# --- STATISTICAL SIGNIFICANCE + ASSUMPTION VERIFICATION ---
+
+def run_significance_analysis(untampered, tampered):
+    """Verify the three t-test assumptions on the Jaccard environment-variable
+    deviation, then run the appropriate significance test (praxis Section 3.5.3).
+
+    A two-sample test compares a metric between two independent groups and
+    evaluates whether they are drawn from the same distribution. The parametric
+    Student's t-test requires: (1) independence of observations, (2) approximate
+    normality within each group, and (3) homogeneity of variance. Each is checked
+    below; when normality/equal-variance fail, the non-parametric Mann-Whitney U
+    test (which requires neither) is reported as the primary result.
+    """
+    u = np.asarray(untampered, dtype=float)
+    t = np.asarray(tampered, dtype=float)
+    lines = ["\n--- ASSUMPTION VERIFICATION + SIGNIFICANCE (Jaccard Env-Var) ---"]
+
+    # Assumption 1: Independence — satisfied by design (separate ephemeral runs).
+    lines.append("Assumption 1 (Independence): satisfied by design — each "
+                 "provenance file is from a separate, ephemeral CI/CD run.")
+
+    # Assumption 2: Normality — Shapiro-Wilk per group.
+    lines.append("Assumption 2 (Normality) — Shapiro-Wilk:")
+    for name, arr in (("untampered", u), ("tampered", t)):
+        if np.ptp(arr) == 0:
+            lines.append(f"  {name:<10}: constant group (all values equal) — "
+                         "normality test degenerate; not normally distributed.")
+        else:
+            w, p = stats.shapiro(arr)
+            verdict = "NORMAL" if p > 0.05 else "NOT normal (reject)"
+            lines.append(f"  {name:<10}: W={w:.4f}, p={p:.3e} -> {verdict}")
+
+    # Assumption 3: Homogeneity of variance — Levene's test.
+    lev_w, lev_p = stats.levene(u, t)
+    lev_verdict = "equal (fail to reject)" if lev_p > 0.05 else "UNEQUAL (reject)"
+    lines.append(f"Assumption 3 (Homogeneity of variance) — Levene: "
+                 f"W={lev_w:.4f}, p={lev_p:.3e} -> variances {lev_verdict}")
+
+    # Decision + tests.
+    lines.append("Decision: normality and equal-variance assumptions violated; "
+                 "Mann-Whitney U used as the PRIMARY test.")
+    U, p_mw = stats.mannwhitneyu(u, t, alternative="two-sided")
+    rank_biserial = 1.0 - (2.0 * U) / (len(u) * len(t))
+    lines.append(f"  [PRIMARY] Mann-Whitney U: U={U:.1f}, p={p_mw:.3e}, "
+                 f"rank-biserial={rank_biserial:.2f}")
+    tw, p_welch = stats.ttest_ind(t, u, equal_var=False)
+    lines.append(f"  [secondary] Welch's t-test: t={tw:.4f}, p={p_welch:.3e}")
+    ts, p_student = stats.ttest_ind(t, u, equal_var=True)
+    lines.append(f"  [reference] Student's t-test (assumptions unmet): "
+                 f"t={ts:.4f}, p={p_student:.3e}")
+    return "\n".join(lines)
+
+
 # --- MAIN ANALYSIS ---
 
 def analyze():
@@ -113,14 +166,20 @@ def analyze():
     print("\n--- HYPOTHESIS CHECK (Target: >= 25% Delta) ---")
     print(delta)
 
-    # 4b. Statistical Significance (two-sample t-test, Jaccard env-var metric)
-    # Note: not applied to builder_id_deviation — zero within-group variance
-    # renders the t-statistic undefined (reported as categorical separation).
+    # 4b. Statistical Significance (Jaccard env-var metric), praxis Section 3.5.3.
+    # The parametric t-test assumes (1) independence, (2) within-group normality,
+    # and (3) homogeneity of variance. These assumptions are tested explicitly
+    # before any significance test is reported; because normality and equal
+    # variance fail, the non-parametric Mann-Whitney U test is used as the
+    # primary test. (No test is applied to builder_id_deviation: both groups
+    # have zero within-group variance, so the statistic is undefined and the
+    # result is reported as a categorical separation of constants.)
     untampered_env = df[df["label"] == "untampered"]["env_var_deviation"]
     tampered_env = df[df["label"] == "tampered"]["env_var_deviation"]
-    t_stat, p_val = stats.ttest_ind(tampered_env, untampered_env)
-    print("\n--- STATISTICAL SIGNIFICANCE (Jaccard Env-Var Deviation) ---")
-    print(f"Two-sample t-test: t = {t_stat:.4f}, p = {p_val:.4e}")
+    stats_report = run_significance_analysis(untampered_env, tampered_env)
+    print(stats_report)
+    with open(os.path.join(OUTPUT_DIR, "assumption_checks.txt"), "w") as fh:
+        fh.write(stats_report)
 
     # Save Results
     csv_path = os.path.join(OUTPUT_DIR, "hypothesis1_results.csv")
